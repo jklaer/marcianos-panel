@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es-PE" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Marcianos de la Risa · Panel</title>
+  <meta name="description" content="Panel de administración de Marcianos de la Risa: ventas, producción, pagos e incentivos.">
+  <meta name="theme-color" content="#1B9CDA" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0B0F26" media="(prefers-color-scheme: dark)">
+  <!-- PWA / iOS -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/favicon.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Marcianos">
+  <!-- Tipografías: Fredoka (títulos, redondeada como el logo) + Nunito (texto) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Aplica el tema guardado antes de pintar (evita parpadeo) -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('marcianos-tema');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+  <!-- Avisos globales -->
+  <div id="banner-offline" class="banner banner--offline" role="status" hidden>
+    <span aria-hidden="true">📡</span> Sin conexión · mostrando los últimos datos guardados
+  </div>
+  <div id="banner-conflicto" class="banner banner--conflicto" role="alert" hidden></div>
+
+  <!-- ====== PANTALLA DE INGRESO ====== -->
+  <main id="pantalla-login" class="login" hidden>
+    <section class="login__tarjeta" aria-labelledby="login-titulo">
+      <img class="login__logo" src="icons/logo.png" alt="Marcianos de la Risa" width="260" height="270">
+      <h1 id="login-titulo" class="login__titulo">Panel del equipo</h1>
+      <p class="login__ayuda">Ingresa la clave de acceso que te dio el administrador.</p>
+      <form id="form-login" class="login__form" autocomplete="off">
+        <label class="campo">
+          <span class="campo__etiqueta">Clave de acceso</span>
+          <input id="login-clave" name="clave" class="campo__input campo__input--clave" required
+                 autocapitalize="characters" spellcheck="false" inputmode="text"
+                 placeholder="MR-XXXX-XXXX-XXXX" aria-describedby="login-error">
+        </label>
+        <p id="login-error" class="login__error" role="alert"></p>
+        <button class="btn btn--primario btn--grande btn--bloque" type="submit">Entrar</button>
+      </form>
+      <p class="login__nota">¿No tienes clave? Pídesela al dueño o a tu gerente.</p>
+    </section>
+    <img class="login__personajes" src="icons/personajes.png" alt="" aria-hidden="true">
+  </main>
+
+  <!-- ====== AVISO DE CONFIGURACIÓN ====== -->
+  <main id="pantalla-config" class="login" hidden>
+    <section class="login__tarjeta">
+      <img class="login__logo" src="icons/logo.png" alt="Marcianos de la Risa" width="200" height="208">
+      <h1 class="login__titulo">Falta conectar Supabase</h1>
+      <p class="login__ayuda">Edita <code>config.js</code> con la URL y la clave <em>anon</em> de tu proyecto
+        de Supabase y vuelve a publicar. Los pasos están en el <code>README.md</code>.</p>
+    </section>
+  </main>
+
+  <!-- ====== APLICACIÓN ====== -->
+  <div id="app" class="app" hidden>
+    <!-- Barra lateral (escritorio) -->
+    <aside class="lateral" id="lateral" aria-label="Menú principal">
+      <div class="lateral__marca">
+        <img src="icons/icon-192.png" alt="" width="40" height="40">
+        <span class="lateral__nombre" id="nombre-negocio">Marcianos de la Risa</span>
+      </div>
+      <nav id="nav-lateral" class="lateral__nav"></nav>
+      <button class="lateral__colapsar" id="btn-colapsar" type="button" aria-label="Colapsar menú">
+        <span aria-hidden="true">⟨</span>
+      </button>
+    </aside>
+
+    <div class="principal">
+      <header class="cabecera">
+        <div class="cabecera__titulos">
+          <h1 id="titulo-vista" class="cabecera__titulo">Inicio</h1>
+          <p id="subtitulo-vista" class="cabecera__sub"></p>
+        </div>
+        <div class="cabecera__acciones">
+          <span id="estado-rt" class="estado-rt" title="Tiempo real" aria-live="polite">
+            <span class="estado-rt__punto"></span><span class="estado-rt__txt">Conectando…</span>
+          </span>
+          <button id="btn-tema" class="btn-icono" type="button" aria-label="Cambiar modo claro/oscuro">🌓</button>
+          <a href="#/perfil" class="avatar" id="avatar" aria-label="Mi perfil">?</a>
+        </div>
+      </header>
+
+      <main id="contenido" class="contenido" tabindex="-1"></main>
+    </div>
+
+    <!-- Botón flotante de acción (móvil) -->
+    <a id="fab" class="fab" href="#/vender" hidden><span class="fab__icono" aria-hidden="true">＋</span><span class="fab__txt">Vender</span></a>
+
+    <!-- Menú inferior (móvil) -->
+    <nav id="nav-inferior" class="inferior" aria-label="Menú inferior"></nav>
+  </div>
+
+  <!-- Hoja "Más" (móvil) -->
+  <dialog id="hoja-mas" class="hoja" aria-label="Más opciones">
+    <div class="hoja__asa" aria-hidden="true"></div>
+    <nav id="nav-mas" class="hoja__nav"></nav>
+    <button class="btn btn--fantasma btn--bloque" type="button" data-cerrar>Cerrar</button>
+  </dialog>
+
+  <!-- Modal genérico -->
+  <dialog id="modal" class="modal">
+    <form method="dialog" class="modal__cerrar-form"><button class="modal__x" aria-label="Cerrar">✕</button></form>
+    <div id="modal-cuerpo"></div>
+  </dialog>
+
+  <div id="toasts" class="toasts" aria-live="polite" aria-atomic="false"></div>
+  <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+
+  <!-- Librería oficial de Supabase (v2) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
